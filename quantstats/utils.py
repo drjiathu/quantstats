@@ -21,7 +21,6 @@ import io as _io
 import datetime as _dt
 import pandas as _pd
 import numpy as _np
-from ._compat import safe_yfinance_download
 from . import stats as _stats
 from ._compat import safe_concat, safe_resample
 import inspect
@@ -646,44 +645,6 @@ def _prepare_returns(data, rf=0.0, nperiods=None):
     return data
 
 
-def download_returns(ticker, period="max", proxy=None):
-    """
-    Download returns data for a given ticker using yfinance
-
-    Parameters
-    ----------
-    ticker : str
-        Stock ticker symbol
-    period : str or pd.DatetimeIndex, default "max"
-        Time period for data download
-    proxy : str, optional
-        Proxy server for download
-
-    Returns
-    -------
-    pd.Series
-        Daily returns data for the ticker
-    """
-    # Set up parameters for yfinance download
-    params = {
-        "tickers": ticker,
-        "auto_adjust": True,
-        "multi_level_index": False,
-        "progress": False,
-    }
-
-    # Handle different period types
-    if isinstance(period, _pd.DatetimeIndex):
-        params["start"] = period[0]
-    else:
-        params["period"] = period
-
-    # Download data and calculate returns
-    df = safe_yfinance_download(proxy=proxy, **params)["Close"].pct_change()  # type: ignore
-    df = df.tz_localize(None)
-    return df
-
-
 def _prepare_benchmark(benchmark=None, period="max", rf=0.0, prepare_returns=True):
     """
     Fetch benchmark if ticker is provided, and pass through
@@ -694,9 +655,10 @@ def _prepare_benchmark(benchmark=None, period="max", rf=0.0, prepare_returns=Tru
     if benchmark is None:
         return None
 
+    # NOTE: Deprecated since it based on yfinnace
     # Download benchmark data if ticker string provided
-    if isinstance(benchmark, str):
-        benchmark = download_returns(benchmark)
+    # if isinstance(benchmark, str):
+    #     benchmark = download_returns(benchmark)
 
     # Extract first column if DataFrame provided
     elif isinstance(benchmark, _pd.DataFrame):
@@ -838,8 +800,82 @@ def _score_str(val):
     return ("" if "-" in val else "+") + str(val)
 
 
+# def _deprecated_make_index(
+#     ticker_weights, rebalance="1M", period="max", returns=None, match_dates=False
+# ):
+#     """
+#     Makes an index out of the given tickers and weights.
+#     Optionally you can pass a dataframe with the returns.
+#     If returns is not given it try to download them with yfinance
+
+#     Args:
+#         * ticker_weights (Dict): A python dict with tickers as keys
+#             and weights as values
+#         * rebalance: Pandas resample interval or None for never
+#         * period: time period of the returns to be downloaded
+#         * returns (Series, DataFrame): Optional. Returns If provided,
+#             it will fist check if returns for the given ticker are in
+#             this dataframe, if not it will try to download them with
+#             yfinance
+#     Returns:
+#         * index_returns (Series, DataFrame): Returns for the index
+#     """
+#     # Declare a returns variable
+#     index = None
+#     portfolio = {}
+
+#     # Iterate over weights and get returns for each ticker
+#     for ticker in ticker_weights.keys():
+#         if (returns is None) or (ticker not in returns.columns):
+#             # Download the returns for this ticker, e.g. GOOG
+#             ticker_returns = download_returns(ticker, period)
+#         else:
+#             ticker_returns = returns[ticker]
+
+#         portfolio[ticker] = ticker_returns
+
+#     # Create index members time-series
+#     index = _pd.DataFrame(portfolio).dropna()
+
+#     # Match dates to start from first non-zero date
+#     if match_dates:
+#         index = index[max(index.ne(0).idxmax()):]
+
+#     # Handle case with no rebalancing
+#     if rebalance is None:
+#         # Apply weights directly to returns
+#         for ticker, weight in ticker_weights.items():
+#             index[ticker] = weight * index[ticker]
+#         return index.sum(axis=1)
+
+#     last_day = index.index[-1]
+
+#     # Create rebalance markers
+#     rbdf = safe_resample(index, rebalance, "first")
+#     rbdf["break"] = rbdf.index.strftime("%s")
+
+#     # Add rebalance markers to index returns
+#     index = safe_concat([index, rbdf["break"]], axis=1)
+
+#     # Mark first day of each rebalance period
+#     index["first_day"] = _pd.isna(index["break"]) & ~_pd.isna(index["break"].shift(1))
+#     index.loc[index.index[0], "first_day"] = True
+
+#     # Apply weights on first day of each rebalance period
+#     for ticker, weight in ticker_weights.items():
+#         index[ticker] = _np.where(
+#             index["first_day"], weight * index[ticker], index[ticker]
+#         )
+
+#     # Clean up temporary columns
+#     index = index.drop(columns=["first_day"])
+
+#     # Remove rows where all values are NaN
+#     index = index.dropna(how="all")
+#     return index[index.index <= last_day].sum(axis=1)
+
 def make_index(
-    ticker_weights, rebalance="1M", period="max", returns=None, match_dates=False
+    ticker_weights, returns, rebalance="1M", period="max", match_dates=False
 ):
     """
     Makes an index out of the given tickers and weights.
@@ -849,12 +885,11 @@ def make_index(
     Args:
         * ticker_weights (Dict): A python dict with tickers as keys
             and weights as values
+        * returns (Series, DataFrame): Returns provided, 
+            it will fist check if returns for the given ticker are in
+            this dataframe, if not it will raise a ValueError.
         * rebalance: Pandas resample interval or None for never
         * period: time period of the returns to be downloaded
-        * returns (Series, DataFrame): Optional. Returns If provided,
-            it will fist check if returns for the given ticker are in
-            this dataframe, if not it will try to download them with
-            yfinance
     Returns:
         * index_returns (Series, DataFrame): Returns for the index
     """
@@ -863,10 +898,11 @@ def make_index(
     portfolio = {}
 
     # Iterate over weights and get returns for each ticker
+    if returns is None:
+        raise ValueError("returns is not available")
     for ticker in ticker_weights.keys():
-        if (returns is None) or (ticker not in returns.columns):
-            # Download the returns for this ticker, e.g. GOOG
-            ticker_returns = download_returns(ticker, period)
+        if ticker not in returns.columns:
+            raise ValueError("{ticker} return is missing")
         else:
             ticker_returns = returns[ticker]
 
