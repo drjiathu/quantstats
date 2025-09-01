@@ -11,7 +11,7 @@ dependency versions. It handles deprecated functionality and version-specific ch
 """
 
 from packaging import version
-from typing import Union, Optional, List, Callable
+from typing import Callable, Iterable, Optional, Union
 import warnings
 
 import pandas as pd
@@ -135,7 +135,7 @@ def safe_resample(data: Union[pd.Series, pd.DataFrame],
         return resampler.apply(func_name, **kwargs)
 
 
-def safe_concat(objs: List[Union[pd.Series, pd.DataFrame]],
+def safe_concat(objs: Iterable[pd.Series | pd.DataFrame],
                 axis: int = 0,
                 ignore_index: bool = False,
                 sort: bool = False,

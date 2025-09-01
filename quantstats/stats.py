@@ -163,7 +163,7 @@ def distribution(returns, compounded=True, prepare_returns=True):
             "Only first column will be used."
         )
         returns = returns.copy()
-        returns.columns = map(str.lower, returns.columns)
+        returns.columns = _pd.Index(map(str.lower, returns.columns))
         if len(returns.columns) > 1 and "close" in returns.columns:
             returns = returns["close"]
         else:
@@ -2322,12 +2322,12 @@ def r_squared(returns, benchmark, prepare_returns=True):
     benchmark = _utils._prepare_benchmark(benchmark, returns.index)
 
     # Perform linear regression and extract correlation coefficient
-    _, _, r_val, _, _ = _linregress(
+    _res = _linregress(
         returns, _utils._prepare_benchmark(benchmark, returns.index)
     )
 
     # Square the correlation coefficient to get R-squared
-    return r_val**2
+    return float(_res.rvalue) ** 2
 
 
 def r2(returns, benchmark):
@@ -2492,8 +2492,8 @@ def rolling_greeks(returns, benchmark, periods=252, prepare_returns=True):
 
 
 def compare(
-    returns,
-    benchmark,
+    returns: _pd.Series | _pd.DataFrame,
+    benchmark: _pd.Series | _pd.DataFrame | None,
     aggregate=None,
     compounded=True,
     round_vals=None,
@@ -2533,7 +2533,8 @@ def compare(
     # Store original benchmark for proper aggregation
     # This preserves returns that may fall on non-trading days
     if isinstance(benchmark, str):
-        benchmark_original = _utils.download_returns(benchmark)
+        raise ValueError("benchmark name only is not supported, please provide benchmark return series for comparison")
+        # benchmark_original = _utils.download_returns(benchmark)
     elif isinstance(benchmark, _pd.DataFrame):
         benchmark_original = benchmark[benchmark.columns[0]].copy()
     else:
@@ -2624,7 +2625,7 @@ def monthly_returns(returns, eoy=True, compounded=True, prepare_returns=True):
             "Only first column will be used."
         )
         returns = returns.copy()
-        returns.columns = map(str.lower, returns.columns)
+        returns.columns = _pd.Index(map(str.lower, returns.columns))
         if len(returns.columns) > 1 and "close" in returns.columns:
             returns = returns["close"]
         else:
@@ -2729,17 +2730,8 @@ def drawdown_details(drawdown):
 
         # Return empty DataFrame if no drawdowns found
         if not starts:
-            return _pd.DataFrame(
-                index=[],
-                columns=(
-                    "start",
-                    "valley",
-                    "end",
-                    "days",
-                    "max drawdown",
-                    "99% max drawdown",
-                ),
-            )
+            cols = _pd.Index(["start", "valley", "end", "days", "max drawdown", "99% max drawdown"]) 
+            return _pd.DataFrame(index=_pd.Index([]), columns=cols)
 
         # Handle edge case: drawdown series begins in a drawdown
         if ends and starts[0] > ends[0]:
@@ -2771,17 +2763,8 @@ def drawdown_details(drawdown):
             )
 
         # Create DataFrame with results
-        df = _pd.DataFrame(
-            data=data,
-            columns=(
-                "start",
-                "valley",
-                "end",
-                "days",
-                "max drawdown",
-                "99% max drawdown",
-            ),
-        )
+        cols = _pd.Index(["start", "valley", "end", "days", "max drawdown", "99% max drawdown"])
+        df = _pd.DataFrame(data=data, columns=cols)
 
         # Format data types
         df["days"] = df["days"].astype(int)
