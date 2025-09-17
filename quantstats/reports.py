@@ -33,8 +33,16 @@ from pathlib import Path
 try:
     from IPython.core.display import display as iDisplay, HTML as iHTML
 except ImportError:
-    from IPython.display import display as iDisplay
-    from IPython.core.display import HTML as iHTML
+    try:
+        from IPython.display import display as iDisplay
+        from IPython.core.display import HTML as iHTML
+    except ImportError:
+        # Fallback to dummy functions if IPython is not available
+        def iDisplay(*args, **kwargs):
+            pass
+        
+        def iHTML(*args, **kwargs):
+            pass
 
 
 def _get_trading_periods(periods_per_year=252):
@@ -96,10 +104,31 @@ def _match_dates(returns, benchmark):
     # Handle different types of returns data (Series vs DataFrame)
     if isinstance(returns, _pd.DataFrame):
         # For DataFrame, use the first column to find the start date
-        loc = max(returns[returns.columns[0]].ne(0).idxmax(), benchmark.ne(0).idxmax())
+        try:
+            idx1 = returns[returns.columns[0]].ne(0).idxmax()
+            idx2 = benchmark.ne(0).idxmax()
+            # Ensure we're comparing timestamps
+            if isinstance(idx1, _pd.Timestamp) and isinstance(idx2, _pd.Timestamp):
+                loc = max(idx1, idx2)
+            else:
+                # Fallback to the later index position
+                loc = max(returns.index.get_loc(idx1), benchmark.index.get_loc(idx2))
+        except:
+            loc = 0
     else:
         # For Series, find the maximum of start dates for both series
-        loc = max(returns.ne(0).idxmax(), benchmark.ne(0).idxmax())
+        try:
+            idx1 = returns.ne(0).idxmax()
+            idx2 = benchmark.ne(0).idxmax()
+            # Ensure we're comparing timestamps
+            if isinstance(idx1, _pd.Timestamp) and isinstance(idx2, _pd.Timestamp):
+                loc = max(idx1, idx2)
+            else:
+                # Fallback to the later index position
+                loc = max(returns.index.get_loc(idx1), benchmark.index.get_loc(idx2))
+        except (TypeError, ValueError):
+            # Handle potential type issues by using the latest start date
+            loc = max(returns.index[0], benchmark.index[0])
 
     # Slice both series to start from the latest common start date
     returns = returns.loc[loc:]
@@ -117,7 +146,7 @@ def html(
     output=None,
     compounded=True,
     periods_per_year=252,
-    download_filename="quantstats-tearsheet.html",
+    download_filename=None,
     figfmt="svg",
     template_path=None,
     match_dates=True,
@@ -150,8 +179,8 @@ def html(
         Whether to compound returns for calculations
     periods_per_year : int, default 252
         Number of trading periods per year for annualization
-    download_filename : str, default "quantstats-tearsheet.html"
-        Filename for browser download if output is None
+    download_filename : str or None, default None
+        Filename for browser download if output is None. If None, no automatic download occurs
     figfmt : str, default "svg"
         Format for embedded charts ('svg', 'png', 'jpg')
     template_path : str or None, default None
@@ -166,8 +195,8 @@ def html(
 
     Returns
     -------
-    None
-        Generates HTML file either as download or saved to specified path
+    str
+        HTML content of the generated tearsheet report
 
     Examples
     --------
@@ -181,9 +210,11 @@ def html(
     FileNotFoundError
         If custom template_path doesn't exist
     """
-    # Check if output parameter is required (not in notebook environment)
-    if output is None and not _utils._in_notebook():
-        raise ValueError("`output` must be specified")
+    # No longer raise error when output is None in non-notebook environment
+    # We now always return HTML content regardless of environment
+    # # Check if output parameter is required (not in notebook environment)
+    # if output is None and not _utils._in_notebook():
+    #     raise ValueError("`output` must be specified")
 
     # Clean returns data by removing NaN values if date matching is enabled
     if match_dates:
@@ -247,7 +278,12 @@ def html(
         benchmark_title = None
 
     # Format date range for display in template
-    date_range = returns.index.strftime("%e %b, %Y")
+    try:
+        # Try with vectorized strftime
+        date_range = returns.index.strftime("%e %b, %Y")
+    except AttributeError:
+        # Fallback for non-datetime index
+        date_range = [str(date) for date in returns.index]
     tpl = tpl.replace("{{date_range}}", date_range[0] + " - " + date_range[-1])
     tpl = tpl.replace("{{title}}", title)
     tpl = tpl.replace("{{v}}", __version__)
@@ -278,7 +314,8 @@ def html(
 
     # Format metrics table for HTML display
     mtrx.index.name = "Metric"
-    tpl = tpl.replace("{{metrics}}", _html_table(mtrx))
+    # Ensure _html_table receives proper boolean for showindex
+    tpl = tpl.replace("{{metrics}}", _html_table(mtrx, showindex=True))
 
     # Handle table formatting for multiple columns
     if isinstance(returns, _pd.DataFrame):
@@ -313,7 +350,7 @@ def html(
             )
         yoy.index.name = "Year"
         tpl = tpl.replace("{{eoy_title}}", "<h3>EOY Returns vs Benchmark</h3>")
-        tpl = tpl.replace("{{eoy_table}}", _html_table(yoy))
+        tpl = tpl.replace("{{eoy_table}}", _html_table(yoy, showindex=True))
     else:
         # Generate EOY returns table without benchmark comparison
         # pct multiplier
@@ -330,7 +367,7 @@ def html(
 
         yoy.index.name = "Year"
         tpl = tpl.replace("{{eoy_title}}", "<h3>EOY Returns</h3>")
-        tpl = tpl.replace("{{eoy_table}}", _html_table(yoy))
+        tpl = tpl.replace("{{eoy_table}}", _html_table(yoy, showindex=True))
 
     # Generate drawdown analysis table
     if isinstance(returns, _pd.Series):
@@ -341,7 +378,7 @@ def html(
         )[:10]
         dd_info = dd_info[["start", "end", "max drawdown", "days"]]
         dd_info.columns = ["Started", "Recovered", "Drawdown", "Days"]
-        tpl = tpl.replace("{{dd_info}}", _html_table(dd_info, False))
+        tpl = tpl.replace("{{dd_info}}", _html_table(dd_info, showindex=False))
     elif isinstance(returns, _pd.DataFrame):
         # Handle multiple strategy columns
         dd_info_list = []
@@ -653,15 +690,28 @@ def html(
     tpl = _regex.sub(r"\{\{(.*?)\}\}", "", tpl)
     tpl = tpl.replace("white-space:pre;", "")
 
-    # Handle output - either download in browser or save to file
-    if output is None:
-        # _open_html(tpl)
-        _download_html(tpl, download_filename)
-        return
-
-    # Write HTML content to specified output file
-    with open(output, "w", encoding="utf-8") as f:
-        f.write(tpl)
+    # Handle output - write to file if specified
+    if output is not None:
+        with open(output, "w", encoding="utf-8") as f:
+            f.write(tpl)
+    
+    # In Jupyter notebook environment, handle display and download
+    if _utils._in_notebook():
+        try:
+            # Display HTML in notebook
+            iDisplay(iHTML(tpl))
+            
+            # If output is None and download_filename is specified, trigger download
+            if output is None and download_filename is not None:
+                try:
+                    _download_html(tpl, filename=download_filename)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    
+    # Always return the HTML content
+    return tpl
 
 
 def full(
@@ -2130,7 +2180,9 @@ def _calc_dd(df, display=True, as_pct=False):
         }
 
     # Add benchmark drawdown statistics if present
-    if "benchmark" in df and (dd_info.columns, _pd.MultiIndex):
+    # Initialize dd_info if it doesn't exist
+    dd_info = df if 'benchmark' in df else None
+    if dd_info is not None and hasattr(dd_info, 'columns') and isinstance(dd_info.columns, _pd.MultiIndex):
         bench_dd = dd_info["benchmark"].sort_values(by="max drawdown")
         dd_stats["benchmark"] = {
             "Max Drawdown %": bench_dd.sort_values(by="max drawdown", ascending=True)[
@@ -2167,7 +2219,7 @@ def _calc_dd(df, display=True, as_pct=False):
     return dd_stats.T
 
 
-def _html_table(obj, showindex="default"):
+def _html_table(obj, showindex=True):
     """
     Convert DataFrame to HTML table format for report generation.
 
@@ -2195,7 +2247,7 @@ def _html_table(obj, showindex="default"):
     """
     # Convert DataFrame to HTML table using tabulate
     obj = _tabulate(
-        obj, headers="keys", tablefmt="html", floatfmt=".2f", showindex=showindex
+        obj, headers="keys", tablefmt="html", floatfmt=".2f", showindex=bool(showindex)
     )
 
     # Remove default tabulate styling attributes
