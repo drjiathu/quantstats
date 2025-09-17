@@ -34,9 +34,9 @@ setup(
     version=version,
     description='Portfolio analytics for quants',
     long_description=long_description,
-    url='https://github.com/ranaroussi/quantstats',
-    author='Ran Aroussi',
-    author_email='ran@aroussi.com',
+    url='https://github.com/drjiathu/quantstats',
+    author='Jia Xiaowei',
+    author_email='drjiathu@gmail.com',
     license='Apache Software License',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',

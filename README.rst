@@ -14,13 +14,9 @@
     :target: https://pypi.python.org/pypi/quantstats
     :alt: PyPi downloads
 
-.. image:: https://img.shields.io/github/stars/ranaroussi/quantstats.svg?style=social&label=Star&maxAge=60
-    :target: https://github.com/ranaroussi/quantstats
+.. image:: https://img.shields.io/github/stars/drjiathu/quantstats.svg?style=social&label=Star&maxAge=60
+    :target: https://github.com/drjiathu/quantstats
     :alt: Star this repo
-
-.. image:: https://img.shields.io/twitter/follow/aroussi.svg?style=social&label=Follow&maxAge=60
-    :target: https://twitter.com/aroussi
-    :alt: Follow me on twitter
 
 \
 
@@ -254,11 +250,11 @@ Questions?
 ----------
 
 This is a new library... If you find a bug, please
-`open an issue <https://github.com/ranaroussi/quantstats/issues>`_
+`open an issue <https://github.com/drjiathu/quantstats/issues>`_
 in this repository.
 
 If you'd like to contribute, a great place to look is the
-`issues marked with help-wanted <https://github.com/ranaroussi/quantstats/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_.
+`issues marked with help-wanted <https://github.com/drjiathu/quantstats/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_.
 
 
 Known Issues
@@ -279,4 +275,4 @@ P.S.
 
 Please drop me a note with any feedback you have.
 
-**Ran Aroussi**
+**Jia Xiaowei**
