@@ -33,8 +33,24 @@ from pathlib import Path
 try:
     from IPython.core.display import display as iDisplay, HTML as iHTML
 except ImportError:
-    from IPython.display import display as iDisplay
-    from IPython.core.display import HTML as iHTML
+    try:
+        from IPython.display import display as iDisplay
+        from IPython.core.display import HTML as iHTML
+    except ImportError:
+        # 定义模拟函数，避免在非IPython环境中出错
+        def iDisplay(*args, **kwargs):
+            pass
+        
+        def iHTML(*args, **kwargs):
+            pass
+
+# # 导入get_ipython函数，用于_in_notebook检测
+# try:
+#     from IPython.core.getipython import get_ipython
+# except ImportError:
+#     # 如果无法导入，定义一个返回None的函数
+#     def get_ipython():
+#         return None
 
 
 def _get_trading_periods(periods_per_year=252):
@@ -122,7 +138,7 @@ def html(
     template_path=None,
     match_dates=True,
     **kwargs,
-):
+) -> str:
     """
     Generate an HTML tearsheet report for portfolio performance analysis.
 
@@ -166,7 +182,8 @@ def html(
 
     Returns
     -------
-    None
+    str
+        Returns the HTML content as a string. 
         Generates HTML file either as download or saved to specified path
 
     Examples
@@ -181,9 +198,8 @@ def html(
     FileNotFoundError
         If custom template_path doesn't exist
     """
-    # Check if output parameter is required (not in notebook environment)
-    if output is None and not _utils._in_notebook():
-        raise ValueError("`output` must be specified")
+    # 不再强制要求output参数，函数将始终返回HTML内容字符串
+    # 用户可以选择如何处理这个返回值
 
     # Clean returns data by removing NaN values if date matching is enabled
     if match_dates:
@@ -664,15 +680,20 @@ def html(
     tpl = _regex.sub(r"\{\{(.*?)\}\}", "", tpl)
     tpl = tpl.replace("white-space:pre;", "")
 
-    # Handle output - either download in browser or save to file
-    if output is None:
-        # _open_html(tpl)
-        _download_html(tpl, download_filename)
-        return
-
-    # Write HTML content to specified output file
-    with open(output, "w", encoding="utf-8") as f:
-        f.write(tpl)
+    # Handle output
+    # If in notebook environment, display the html content.
+    if _utils._in_notebook():
+        iDisplay(iHTML(tpl))
+        # Only trigger download in notebook environment 
+        # if output is None and download_filename is provided
+        if output is None and download_filename is not None:
+            _download_html(tpl, download_filename)
+    # Write HTML content to specified output file when output is provided
+    if output is not None:
+        with open(output, "w", encoding="utf-8") as f:
+            f.write(tpl)
+    # Always return the HTML content as a string
+    return tpl
 
 
 def full(
