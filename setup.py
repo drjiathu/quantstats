@@ -9,7 +9,6 @@ by providing them with in-depth analytics and risk metrics.
 """
 
 from setuptools import setup, find_packages
-# from codecs import open
 import io
 from os import path
 

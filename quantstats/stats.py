@@ -2676,7 +2676,7 @@ def compare(
     # Store original benchmark for proper aggregation
     # This preserves returns that may fall on non-trading days
     if isinstance(benchmark, str):
-        benchmark_original = _utils.download_returns(benchmark)
+        raise ValueError("benchmark name only mode is not supported, please provide a pandas.Series or pandas.DataFrame object.")
     elif isinstance(benchmark, _pd.DataFrame):
         benchmark_original = benchmark[benchmark.columns[0]].copy()
     else:

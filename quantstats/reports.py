@@ -135,9 +135,9 @@ def html(
     ----------
     returns : pd.Series or pd.DataFrame
         Daily returns data for the strategy/portfolio
-    benchmark : pd.Series, str, or None, default None
-        Benchmark returns for comparison. Can be a Series of returns,
-        a ticker symbol string, or None for no benchmark
+    benchmark : pd.Series or None, default None
+        Benchmark returns for comparison. Can be a Series of returns, or None 
+        for no benchmark
     rf : float, default 0.0
         Risk-free rate for calculations (as decimal, e.g., 0.02 for 2%)
     grayscale : bool, default False
@@ -241,10 +241,7 @@ def html(
         # Store original benchmark before any alignment for accurate EOY calculations
         # This preserves the full benchmark data including non-trading days
         if isinstance(benchmark, str):
-            # Download the full benchmark data
-            benchmark_original = _utils.download_returns(benchmark)
-            if rf != 0:
-                benchmark_original = _utils.to_excess_returns(benchmark_original, rf)
+            raise ValueError("benchmark must be a pandas Series or DataFrame, not a name only")
         elif isinstance(benchmark, _pd.Series):
             benchmark_original = benchmark.copy()
         else:
