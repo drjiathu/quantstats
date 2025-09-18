@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 """QuantStats: Portfolio analytics for quants
-https://github.com/ranaroussi/quantstats
+https://github.com/drjiathu/quantstats
 QuantStats performs portfolio profiling, to allow quants and
 portfolio managers to understand their performance better,
 by providing them with in-depth analytics and risk metrics.
@@ -33,9 +33,9 @@ setup(
     version=version,
     description='Portfolio analytics for quants',
     long_description=long_description,
-    url='https://github.com/ranaroussi/quantstats',
-    author='Ran Aroussi',
-    author_email='ran@aroussi.com',
+    url='https://github.com/drjiathu/quantstats',
+    author='Jia Xiaowei',
+    author_email='xiaowei.jia@outlook.com',
     license='Apache Software License',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',

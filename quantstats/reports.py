@@ -2,9 +2,9 @@
 # -*- coding: UTF-8 -*-
 #
 # QuantStats: Portfolio analytics for quants
-# https://github.com/ranaroussi/quantstats
+# https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Ran Aroussi
+# Copyright 2019-2025 Jia Xiaowei
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -198,11 +198,8 @@ def html(
     FileNotFoundError
         If custom template_path doesn't exist
     """
-    # 不再强制要求output参数，函数将始终返回HTML内容字符串
-    # 用户可以选择如何处理这个返回值
-
     # Clean returns data by removing NaN values if date matching is enabled
-    if match_dates:
+    if match_dates and isinstance(returns, (_pd.Series, _pd.DataFrame)):
         returns = returns.dropna()
 
     # Get trading periods for calculations
