@@ -4,7 +4,7 @@
 # QuantStats: Portfolio analytics for quants
 # https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Jia Xiaowei
+# Copyright 2025 Jia Xiaowei
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
