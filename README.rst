@@ -1,4 +1,4 @@
-.. image:: https://img.shields.io/badge/python-3.6+-blue.svg?style=flat
+.. image:: https://img.shields.io/badge/python-3.10+-blue.svg?style=flat
     :target: https://pypi.python.org/pypi/quantstats
     :alt: Python version
 
@@ -219,14 +219,25 @@ In the meantime, you can get insights as to optional parameters for each method,
 Installation
 ------------
 
-Install using ``pip``:
+**Recommended way using Poetry**:
+
+.. code:: bash
+
+    $ git clone https://github.com/drjiathu/quantstats.git
+    $ cd quantstats
+    $ poetry install
+
+
+**Alternative installation methods**:
+
+Using ``pip``:
 
 .. code:: bash
 
     $ pip install quantstats --upgrade --no-cache-dir
 
 
-Install using ``conda``:
+Using ``conda``:
 
 .. code:: bash
 
@@ -236,15 +247,19 @@ Install using ``conda``:
 Requirements
 ------------
 
-* `Python <https://www.python.org>`_ >= 3.5+
-* `pandas <https://github.com/pydata/pandas>`_ (tested to work with >=0.24.0)
-* `numpy <http://www.numpy.org>`_ >= 1.15.0
-* `scipy <https://www.scipy.org>`_ >= 1.2.0
-* `matplotlib <https://matplotlib.org>`_ >= 3.0.0
-* `seaborn <https://seaborn.pydata.org>`_ >= 0.9.0
-* `tabulate <https://bitbucket.org/astanin/python-tabulate>`_ >= 0.8.0
-* `yfinance <https://github.com/ranaroussi/yfinance>`_ >= 0.1.38
+* `Python <https://www.python.org>`_ >= 3.10+
+* `pandas <https://github.com/pydata/pandas>`_ >= 1.5.0,<3.0.0
+* `numpy <http://www.numpy.org>`_ >= 1.21.0
+* `scipy <https://www.scipy.org>`_ >= 1.7.0
+* `matplotlib <https://matplotlib.org>`_ >= 3.3.0
+* `seaborn <https://seaborn.pydata.org>`_ >= 0.11.0
+* `tabulate <https://bitbucket.org/astanin/python-tabulate>`_ >= 0.8.9
+* `python-dateutil <https://github.com/dateutil/dateutil>`_ >= 2.8.0
+* `packaging <https://github.com/pypa/packaging>`_ >= 20.0
+* `yfinance <https://github.com/ranaroussi/yfinance>`_ >= 0.1.38 (optional, for downloading returns)
 * `plotly <https://plot.ly/>`_ >= 3.4.1 (optional, for using ``plots.to_plotly()``)
+
+The project now uses `pyproject.toml <https://github.com/drjiathu/quantstats/blob/main/pyproject.toml>`_ for modern Python packaging and dependency management.
 
 Questions?
 ----------

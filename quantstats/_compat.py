@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 import warnings
 from packaging import version
-from typing import Union, Optional, List, Callable
+from typing import Callable
 
 # Version detection - Parse version strings to enable version comparisons
 PANDAS_VERSION = version.parse(pd.__version__)
@@ -57,7 +57,7 @@ def get_frequency_alias(freq: str) -> str:
     return FREQUENCY_ALIASES.get(freq, freq)
 
 
-def normalize_timezone(data: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
+def normalize_timezone(data: pd.Series | pd.DataFrame) -> pd.Series | pd.DataFrame:
     """
     Normalize timezone information for consistent comparisons.
     
@@ -66,12 +66,12 @@ def normalize_timezone(data: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series,
     
     Parameters
     ----------
-    data : pd.Series or pd.DataFrame
+    data : pd.Series | pd.DataFrame
         Time series data with DatetimeIndex
         
     Returns
     -------
-    pd.Series or pd.DataFrame
+    pd.Series | pd.DataFrame
         Data with timezone-naive DatetimeIndex
     """
     if not isinstance(data.index, pd.DatetimeIndex):
@@ -87,9 +87,9 @@ def normalize_timezone(data: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series,
     return data
 
 
-def safe_resample(data: Union[pd.Series, pd.DataFrame],
+def safe_resample(data: pd.Series | pd.DataFrame,
                   freq: str,
-                  func_name: Optional[Union[str, Callable]] = None,
+                  func_name: str | Callable | None = None,
                   **kwargs):
     """
     Safe resample operation that works with all pandas versions.
@@ -168,11 +168,11 @@ def safe_resample(data: Union[pd.Series, pd.DataFrame],
     return normalize_timezone(result)  # pyright: ignore[reportArgumentType]
 
 
-def safe_concat(objs: List[Union[pd.Series, pd.DataFrame]],
+def safe_concat(objs: list[pd.Series | pd.DataFrame],
                 axis: int = 0,
                 ignore_index: bool = False,
                 sort: bool = False,
-                **kwargs) -> Union[pd.Series, pd.DataFrame]:
+                **kwargs) -> pd.Series | pd.DataFrame:
     """
     Safe concatenation that handles pandas version differences.
 
@@ -217,7 +217,7 @@ def safe_concat(objs: List[Union[pd.Series, pd.DataFrame]],
 
 
 def safe_append(df: pd.DataFrame,
-                other: Union[pd.DataFrame, pd.Series],
+                other: pd.DataFrame | pd.Series,
                 ignore_index: bool = False,
                 sort: bool = False) -> pd.DataFrame:
     """
@@ -266,8 +266,7 @@ def safe_append(df: pd.DataFrame,
         return df.append(other, ignore_index=ignore_index, sort=sort)
 
 
-def safe_frequency_conversion(data: Union[pd.Series, pd.DataFrame],
-                              freq: str) -> Union[pd.Series, pd.DataFrame]:
+def safe_frequency_conversion(data: pd.Series | pd.DataFrame,freq: str) -> pd.Series | pd.DataFrame:
     """
     Safe frequency conversion for time series data.
 

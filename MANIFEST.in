@@ -1,7 +1,9 @@
 # Include the license file
 include LICENSE.txt
-include requirements.txt
 include quantstats/report.html
+
+# Include the package configuration file
+include pyproject.toml
 
 # Include the data files
 recursive-include data *
