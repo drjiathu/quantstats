@@ -14,7 +14,7 @@ mechanisms for functions that may not exist in older versions.
 import numpy as np
 import warnings
 from packaging import version
-from typing import Union, Optional, Any
+from typing import Any
 
 # Version detection - Parse numpy version string to enable version comparisons
 NUMPY_VERSION = version.parse(np.__version__)
@@ -142,7 +142,7 @@ def handle_numpy_warnings():
     return warnings.catch_warnings()
 
 
-def safe_percentile(data, percentile: Union[float, list], **kwargs):
+def safe_percentile(data, percentile: float | list, **kwargs):
     """
     Safe percentile calculation that handles numpy version differences.
 
@@ -184,7 +184,7 @@ def safe_percentile(data, percentile: Union[float, list], **kwargs):
         return np.percentile(data, percentile, **kwargs)
 
 
-def safe_nanpercentile(data, percentile: Union[float, list], **kwargs):
+def safe_nanpercentile(data, percentile: float | list, **kwargs):
     """
     Safe nanpercentile calculation that handles numpy version differences.
 
@@ -226,7 +226,7 @@ def safe_nanpercentile(data, percentile: Union[float, list], **kwargs):
         return np.nanpercentile(data, percentile, **kwargs)
 
 
-def safe_quantile(data, quantile: Union[float, list], **kwargs):
+def safe_quantile(data, quantile: float | list, **kwargs):
     """
     Safe quantile calculation that handles numpy version differences.
 
@@ -268,7 +268,7 @@ def safe_quantile(data, quantile: Union[float, list], **kwargs):
         return np.quantile(data, quantile, **kwargs)
 
 
-def safe_random_seed(seed: Optional[int]):
+def safe_random_seed(seed: int | None):
     """
     Safe random seed setting for numpy.
 

@@ -1,0 +1,103 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "QuantStats"
+version = "0.0.77"
+description = "Portfolio analytics for quants"
+readme = "README.rst"
+authors = [{ name = "Jia Xiaowei", email = "xiaowei.jia@outlook.com" }]
+license = { file = "LICENSE.txt" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+keywords = [
+    "quant", "algotrading", "algorithmic-trading", "quantitative-trading",
+    "quantitative-analysis", "algo-trading", "visualization", "plotting"
+]
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "pandas>=1.5.0,<3.0.0",
+    "numpy>=1.21.0",
+    "seaborn>=0.11.0",
+    "matplotlib>=3.3.0",
+    "scipy>=1.7.0",
+    "tabulate>=0.8.9",
+    "python-dateutil>=2.8.0",
+    "packaging>=20.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/drjiathu/quantstats"
+Repository = "https://github.com/drjiathu/quantstats"
+
+[tool.poetry]
+name = "QuantStats"
+version = "0.0.77"
+description = "Portfolio analytics for quants"
+authors = ["Jia Xiaowei <xiaowei.jia@outlook.com>"]
+license = "Apache Software License"
+readme = "README.rst"
+homepage = "https://github.com/drjiathu/quantstats"
+repository = "https://github.com/drjiathu/quantstats"
+keywords = [
+    "quant", "algotrading", "algorithmic-trading", "quantitative-trading",
+    "quantitative-analysis", "algo-trading", "visualization", "plotting"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pandas = ">=1.5.0,<3.0.0"
+numpy = ">=1.21.0"
+seaborn = ">=0.11.0"
+matplotlib = ">=3.3.0"
+scipy = ">=1.7.0"
+tabulate = ">=0.8.9"
+python-dateutil = ">=2.8.0"
+packaging = ">=20.0"
+
+[tool.poetry.dev-dependencies]
+# 可在此添加开发依赖，如测试框架等
+# pytest = "^7.0.0"
+
+[tool.poetry.scripts]
+# 如果需要命令行脚本，可以在这里定义
+# sample = "sample:main"
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(\.
+    |venv
+    |__pycache__
+    |build
+    |dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+strict = false
