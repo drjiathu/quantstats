@@ -74,8 +74,8 @@ python-dateutil = ">=2.8.0"
 packaging = ">=20.0"
 
 [tool.poetry.dev-dependencies]
-# 可在此添加开发依赖，如测试框架等
-# pytest = "^7.0.0"
+# 测试框架
+pytest = "^7.0.0"
 
 [tool.poetry.scripts]
 # 如果需要命令行脚本，可以在这里定义
