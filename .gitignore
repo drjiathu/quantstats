@@ -21,9 +21,6 @@ build/
 docs/build/
 !/docs/build/epub/*.epub
 
-# Test directories
-/tests/
-
 # System files
 .DS_Store
 Icon
