@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
-# Quantreturns: Portfolio analytics for quants
-# https://github.com/ranaroussi/quantreturns
+# QuantStats: Portfolio analytics for quants
+# https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Ran Aroussi
+# Copyright 2025 Jia Xiaowei
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -185,9 +185,9 @@ def plot_returns_bars(
     if isinstance(returns, _pd.Series):
         df = _pd.DataFrame(index=returns.index, data={returns.name: returns})
     elif isinstance(returns, _pd.DataFrame):
-        df = _pd.DataFrame(
-            index=returns.index, data={col: returns[col] for col in returns.columns}
-        )
+        df = returns.copy()
+    else:
+        raise TypeError("returns must be a pandas Series or DataFrame")
 
     # Add benchmark data if provided
     if isinstance(benchmark, _pd.Series):

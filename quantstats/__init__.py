@@ -2,9 +2,9 @@
 # -*- coding: UTF-8 -*-
 #
 # QuantStats: Portfolio analytics for quants
-# https://github.com/ranaroussi/quantstats
+# https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Ran Aroussi
+# Copyright 2025 Jia Xiaowei
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 from . import version
 
 __version__ = version.version
-__author__ = "Ran Aroussi"
+__author__ = "Jia Xiaowei"
 
 from . import stats, utils, plots, reports
 

@@ -2,15 +2,15 @@
 # -*- coding: UTF-8 -*-
 #
 # QuantStats: Portfolio analytics for quants
-# https://github.com/ranaroussi/quantstats
+# https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Ran Aroussi
+# Copyright 2025 Jia Xiaowei
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
-# ˜
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,6 @@ import io as _io
 import datetime as _dt
 import pandas as _pd
 import numpy as _np
-from ._compat import safe_yfinance_download
 from . import stats as _stats
 from ._compat import safe_concat, safe_resample
 import inspect
@@ -126,9 +125,9 @@ def _generate_cache_key(data, rf, nperiods):
     try:
         # Create a hash from the data
         if isinstance(data, _pd.Series):
-            data_hash = _pd.util.hash_pandas_object(data).sum()
+            data_hash = _pd.util.hash_pandas_object(data).sum()  # pyright: ignore[reportAttributeAccessIssue]
         elif isinstance(data, _pd.DataFrame):
-            data_hash = _pd.util.hash_pandas_object(data).sum()
+            data_hash = _pd.util.hash_pandas_object(data).sum()  # pyright: ignore[reportAttributeAccessIssue]
         else:
             data_hash = hash(str(data))
 
@@ -569,7 +568,7 @@ def _prepare_prices(data, base=1.0):
 
     # Normalize timezone information for consistency
     # Convert to UTC if timezone-aware, then make naive
-    if hasattr(data.index, 'tz') and data.index.tz is not None:
+    if hasattr(data.index, 'tz') and data.index.tz is not None:  # pyright: ignore[reportAttributeAccessIssue]
         data = data.tz_convert('UTC').tz_localize(None)
     return data
 
@@ -643,7 +642,7 @@ def _prepare_returns(data, rf=0.0, nperiods=None):
 
     # Normalize timezone information for consistency
     # Convert to UTC if timezone-aware, then make naive
-    if hasattr(data.index, 'tz') and data.index.tz is not None:
+    if hasattr(data.index, 'tz') and data.index.tz is not None:  # pyright: ignore[reportAttributeAccessIssue]
         data = data.tz_convert('UTC').tz_localize(None)
 
     # Cache the result
@@ -653,44 +652,6 @@ def _prepare_returns(data, rf=0.0, nperiods=None):
             _PREPARE_RETURNS_CACHE[cache_key] = data.copy()
 
     return data
-
-
-def download_returns(ticker, period="max", proxy=None):
-    """
-    Download returns data for a given ticker using yfinance
-
-    Parameters
-    ----------
-    ticker : str
-        Stock ticker symbol
-    period : str or pd.DatetimeIndex, default "max"
-        Time period for data download
-    proxy : str, optional
-        Proxy server for download
-
-    Returns
-    -------
-    pd.Series
-        Daily returns data for the ticker
-    """
-    # Set up parameters for yfinance download
-    params = {
-        "tickers": ticker,
-        "auto_adjust": True,
-        "multi_level_index": False,
-        "progress": False,
-    }
-
-    # Handle different period types
-    if isinstance(period, _pd.DatetimeIndex):
-        params["start"] = period[0]
-    else:
-        params["period"] = period
-
-    # Download data and calculate returns
-    df = safe_yfinance_download(proxy=proxy, **params)["Close"].pct_change(fill_method=None)  # type: ignore
-    df = df.fillna(0).tz_localize(None)
-    return df
 
 
 def _prepare_benchmark(benchmark=None, period="max", rf=0.0, prepare_returns=True):
@@ -705,7 +666,7 @@ def _prepare_benchmark(benchmark=None, period="max", rf=0.0, prepare_returns=Tru
 
     # Download benchmark data if ticker string provided
     if isinstance(benchmark, str):
-        benchmark = download_returns(benchmark)
+        raise ValueError("benchmark must be a pandas Series or DataFrame, not a str name")
 
     # Extract first column if DataFrame provided
     elif isinstance(benchmark, _pd.DataFrame):
@@ -727,7 +688,7 @@ def _prepare_benchmark(benchmark=None, period="max", rf=0.0, prepare_returns=Tru
 
     # Normalize timezone information for consistent comparisons
     # Convert to UTC if timezone-aware, then make naive
-    if hasattr(benchmark.index, 'tz') and benchmark.index.tz is not None:
+    if hasattr(benchmark.index, 'tz') and benchmark.index.tz is not None:  # pyright: ignore[reportAttributeAccessIssue]
         benchmark = benchmark.tz_convert('UTC').tz_localize(None)
     # If already timezone-naive, no action needed
 
@@ -851,22 +812,20 @@ def _score_str(val):
 
 
 def make_index(
-    ticker_weights, rebalance="1ME", period="max", returns=None, match_dates=False
+    ticker_weights, returns, rebalance="1ME", period="max", match_dates=False
 ):
     """
     Makes an index out of the given tickers and weights.
-    Optionally you can pass a dataframe with the returns.
-    If returns is not given it try to download them with yfinance
+    Should pass a dataframe with the returns for each ticker.
 
     Args:
         * ticker_weights (Dict): A python dict with tickers as keys
             and weights as values
+        * returns (Series, DataFrame): Returns, it will fist check if 
+            returns for the given ticker are in this dataframe, if not 
+            it will raise a ValueError
         * rebalance: Pandas resample interval or None for never
         * period: time period of the returns to be downloaded
-        * returns (Series, DataFrame): Optional. Returns If provided,
-            it will fist check if returns for the given ticker are in
-            this dataframe, if not it will try to download them with
-            yfinance
     Returns:
         * index_returns (Series, DataFrame): Returns for the index
     """
@@ -878,7 +837,7 @@ def make_index(
     for ticker in ticker_weights.keys():
         if (returns is None) or (ticker not in returns.columns):
             # Download the returns for this ticker, e.g. GOOG
-            ticker_returns = download_returns(ticker, period)
+            raise ValueError(f"return of {ticker} is not provided")
         else:
             ticker_returns = returns[ticker]
 
@@ -902,13 +861,13 @@ def make_index(
 
     # Create rebalance markers
     rbdf = safe_resample(index, rebalance, "first")
-    rbdf["break"] = rbdf.index.strftime("%s")
+    rbdf["break"] = rbdf.index.strftime("%s")  # pyright: ignore[reportAttributeAccessIssue, reportIndexIssue]
 
     # Add rebalance markers to index returns
-    index = safe_concat([index, rbdf["break"]], axis=1)
+    index = safe_concat([index, rbdf["break"]], axis=1)  # pyright: ignore[reportArgumentType]
 
     # Mark first day of each rebalance period
-    index["first_day"] = _pd.isna(index["break"]) & ~_pd.isna(index["break"].shift(1))
+    index["first_day"] = _pd.isna(index["break"]) & ~_pd.isna(index["break"].shift(1))  # pyright: ignore[reportAttributeAccessIssue]
     index.loc[index.index[0], "first_day"] = True
 
     # Apply weights on first day of each rebalance period
@@ -956,7 +915,7 @@ def make_portfolio(returns, start_balance=1e5, mode="comp", round_to=None):
         p1 = to_prices(returns, start_balance)
     else:
         # Fixed amount every day approach
-        comp_rev = (start_balance + start_balance * returns.shift(1)).fillna(
+        comp_rev = (start_balance + start_balance * returns.shift(1)).fillna(  # pyright: ignore[reportAttributeAccessIssue]
             start_balance
         ) * returns
         p1 = start_balance + comp_rev.cumsum()
@@ -965,7 +924,7 @@ def make_portfolio(returns, start_balance=1e5, mode="comp", round_to=None):
     p0 = _pd.Series(data=start_balance, index=p1.index + _pd.Timedelta(days=-1))[:1]
 
     # Combine starting balance with portfolio values
-    portfolio = safe_concat([p0, p1])
+    portfolio = safe_concat([p0, p1])  # pyright: ignore[reportArgumentType]
 
     # Handle DataFrame case
     if isinstance(returns, _pd.DataFrame):

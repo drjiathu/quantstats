@@ -2,9 +2,9 @@
 # -*- coding: UTF-8 -*-
 #
 # QuantStats: Portfolio analytics for quants
-# https://github.com/ranaroussi/quantstats
+# https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Ran Aroussi
+# Copyright 2025 Jia Xiaowei
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,24 @@ from pathlib import Path
 try:
     from IPython.core.display import display as iDisplay, HTML as iHTML
 except ImportError:
-    from IPython.display import display as iDisplay
-    from IPython.core.display import HTML as iHTML
+    try:
+        from IPython.display import display as iDisplay
+        from IPython.core.display import HTML as iHTML
+    except ImportError:
+        # 定义模拟函数，避免在非IPython环境中出错
+        def iDisplay(*args, **kwargs):
+            pass
+        
+        def iHTML(*args, **kwargs):
+            pass
+
+# # 导入get_ipython函数，用于_in_notebook检测
+# try:
+#     from IPython.core.getipython import get_ipython
+# except ImportError:
+#     # 如果无法导入，定义一个返回None的函数
+#     def get_ipython():
+#         return None
 
 
 def _get_trading_periods(periods_per_year=252):
@@ -117,12 +133,12 @@ def html(
     output=None,
     compounded=True,
     periods_per_year=252,
-    download_filename="quantstats-tearsheet.html",
+    download_filename=None,
     figfmt="svg",
     template_path=None,
     match_dates=True,
     **kwargs,
-):
+) -> str:
     """
     Generate an HTML tearsheet report for portfolio performance analysis.
 
@@ -135,9 +151,9 @@ def html(
     ----------
     returns : pd.Series or pd.DataFrame
         Daily returns data for the strategy/portfolio
-    benchmark : pd.Series, str, or None, default None
-        Benchmark returns for comparison. Can be a Series of returns,
-        a ticker symbol string, or None for no benchmark
+    benchmark : pd.Series or None, default None
+        Benchmark returns for comparison. Can be a Series of returns, or None 
+        for no benchmark
     rf : float, default 0.0
         Risk-free rate for calculations (as decimal, e.g., 0.02 for 2%)
     grayscale : bool, default False
@@ -150,7 +166,7 @@ def html(
         Whether to compound returns for calculations
     periods_per_year : int, default 252
         Number of trading periods per year for annualization
-    download_filename : str, default "quantstats-tearsheet.html"
+    download_filename : str or None, default None
         Filename for browser download if output is None
     figfmt : str, default "svg"
         Format for embedded charts ('svg', 'png', 'jpg')
@@ -166,7 +182,8 @@ def html(
 
     Returns
     -------
-    None
+    str
+        Returns the HTML content as a string. 
         Generates HTML file either as download or saved to specified path
 
     Examples
@@ -181,12 +198,8 @@ def html(
     FileNotFoundError
         If custom template_path doesn't exist
     """
-    # Check if output parameter is required (not in notebook environment)
-    if output is None and not _utils._in_notebook():
-        raise ValueError("`output` must be specified")
-
     # Clean returns data by removing NaN values if date matching is enabled
-    if match_dates:
+    if match_dates and isinstance(returns, (_pd.Series, _pd.DataFrame)):
         returns = returns.dropna()
 
     # Get trading periods for calculations
@@ -241,10 +254,7 @@ def html(
         # Store original benchmark before any alignment for accurate EOY calculations
         # This preserves the full benchmark data including non-trading days
         if isinstance(benchmark, str):
-            # Download the full benchmark data
-            benchmark_original = _utils.download_returns(benchmark)
-            if rf != 0:
-                benchmark_original = _utils.to_excess_returns(benchmark_original, rf)
+            raise ValueError("benchmark must be a pandas Series or DataFrame, not a name only")
         elif isinstance(benchmark, _pd.Series):
             benchmark_original = benchmark.copy()
         else:
@@ -667,15 +677,20 @@ def html(
     tpl = _regex.sub(r"\{\{(.*?)\}\}", "", tpl)
     tpl = tpl.replace("white-space:pre;", "")
 
-    # Handle output - either download in browser or save to file
-    if output is None:
-        # _open_html(tpl)
-        _download_html(tpl, download_filename)
-        return
-
-    # Write HTML content to specified output file
-    with open(output, "w", encoding="utf-8") as f:
-        f.write(tpl)
+    # Handle output
+    # If in notebook environment, display the html content.
+    if _utils._in_notebook():
+        iDisplay(iHTML(tpl))
+        # Only trigger download in notebook environment 
+        # if output is None and download_filename is provided
+        if output is None and download_filename is not None:
+            _download_html(tpl, download_filename)
+    # Write HTML content to specified output file when output is provided
+    if output is not None:
+        with open(output, "w", encoding="utf-8") as f:
+            f.write(tpl)
+    # Always return the HTML content as a string
+    return tpl
 
 
 def full(

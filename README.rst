@@ -14,13 +14,9 @@
     :target: https://pypi.python.org/pypi/quantstats
     :alt: PyPi downloads
 
-.. image:: https://img.shields.io/github/stars/ranaroussi/quantstats.svg?style=social&label=Star&maxAge=60
-    :target: https://github.com/ranaroussi/quantstats
+.. image:: https://img.shields.io/github/stars/drjiathu/quantstats.svg?style=social&label=Star&maxAge=60
+    :target: https://github.com/drjiathu/quantstats
     :alt: Star this repo
-
-.. image:: https://img.shields.io/twitter/follow/aroussi.svg?style=social&label=Follow&maxAge=60
-    :target: https://twitter.com/aroussi
-    :alt: Follow me on twitter
 
 \
 
@@ -79,7 +75,7 @@ Visualize stock performance
 
 Output:
 
-.. image:: https://github.com/ranaroussi/quantstats/blob/main/docs/snapshot.webp?raw=true
+.. image:: https://github.com/drjiathu/quantstats/blob/main/docs/snapshot.webp?raw=true
     :alt: Snapshot plot
 
 
@@ -103,10 +99,10 @@ Let' create an html tearsheet
 
 Output will generate something like this:
 
-.. image:: https://github.com/ranaroussi/quantstats/blob/main/docs/report.webp?raw=true
+.. image:: https://github.com/drjiathu/quantstats/blob/main/docs/report.webp?raw=true
     :alt: HTML tearsheet
 
-(`view original html file <https://rawcdn.githack.com/ranaroussi/quantstats/main/docs/tearsheet.html>`_)
+(`view original html file <https://rawcdn.githack.com/drjiathu/quantstats/main/docs/tearsheet.html>`_)
 
 
 To view a complete list of available methods, run
@@ -234,7 +230,7 @@ Install using ``conda``:
 
 .. code:: bash
 
-    $ conda install -c ranaroussi quantstats
+    $ conda install -c drjiathu quantstats
 
 
 Requirements
@@ -254,11 +250,11 @@ Questions?
 ----------
 
 This is a new library... If you find a bug, please
-`open an issue <https://github.com/ranaroussi/quantstats/issues>`_
+`open an issue <https://github.com/drjiathu/quantstats/issues>`_
 in this repository.
 
 If you'd like to contribute, a great place to look is the
-`issues marked with help-wanted <https://github.com/ranaroussi/quantstats/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_.
+`issues marked with help-wanted <https://github.com/drjiathu/quantstats/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22>`_.
 
 
 Known Issues
@@ -279,4 +275,4 @@ P.S.
 
 Please drop me a note with any feedback you have.
 
-**Ran Aroussi**
+**Jia Xiaowei**

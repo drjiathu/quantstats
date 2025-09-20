@@ -2,9 +2,9 @@
 # -*- coding: UTF-8 -*-
 #
 # QuantStats: Portfolio analytics for quants
-# https://github.com/ranaroussi/quantstats
+# https://github.com/drjiathu/quantstats
 #
-# Copyright 2019-2025 Ran Aroussi
+# Copyright 2025 Jia Xiaowei
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ def distribution(returns, compounded=True, prepare_returns=True):
             "Only first column will be used."
         )
         returns = returns.copy()
-        returns.columns = map(str.lower, returns.columns)
+        returns.columns = _pd.Index(map(str.lower, returns.columns))
         if len(returns.columns) > 1 and "close" in returns.columns:
             returns = returns["close"]
         else:
@@ -2676,13 +2676,14 @@ def compare(
     # Store original benchmark for proper aggregation
     # This preserves returns that may fall on non-trading days
     if isinstance(benchmark, str):
-        benchmark_original = _utils.download_returns(benchmark)
+        raise ValueError("benchmark name only mode is not supported, please provide benchmark return as pd.Series for comparison")
+        # benchmark_original = _utils.download_returns(benchmark)
     elif isinstance(benchmark, _pd.DataFrame):
         benchmark_original = benchmark[benchmark.columns[0]].copy()
     else:
         benchmark_original = benchmark.copy() if benchmark is not None else None
     
-    # Normalize timezone for benchmark_original as well (in case it was downloaded)
+    # Normalize timezone for benchmark_original as well
     if benchmark_original is not None and hasattr(benchmark_original.index, 'tz') and benchmark_original.index.tz is not None:
         benchmark_original = benchmark_original.tz_convert('UTC').tz_localize(None)
     
@@ -2772,7 +2773,7 @@ def monthly_returns(returns, eoy=True, compounded=True, prepare_returns=True):
             "Only first column will be used."
         )
         returns = returns.copy()
-        returns.columns = map(str.lower, returns.columns)
+        returns.columns = _pd.Index(map(str.lower, returns.columns))
         if len(returns.columns) > 1 and "close" in returns.columns:
             returns = returns["close"]
         else:
@@ -2877,17 +2878,8 @@ def drawdown_details(drawdown):
 
         # Return empty DataFrame if no drawdowns found
         if not starts:
-            return _pd.DataFrame(
-                index=[],
-                columns=(
-                    "start",
-                    "valley",
-                    "end",
-                    "days",
-                    "max drawdown",
-                    "99% max drawdown",
-                ),
-            )
+            cols = _pd.Index(["start", "valley", "end", "days", "max drawdown", "99% max drawdown"]) 
+            return _pd.DataFrame(index=_pd.Index([]), columns=cols)
 
         # Handle edge case: drawdown series begins in a drawdown
         if ends and starts[0] > ends[0]:
@@ -2919,17 +2911,8 @@ def drawdown_details(drawdown):
             )
 
         # Create DataFrame with results
-        df = _pd.DataFrame(
-            data=data,
-            columns=(
-                "start",
-                "valley",
-                "end",
-                "days",
-                "max drawdown",
-                "99% max drawdown",
-            ),
-        )
+        cols = _pd.Index(["start", "valley", "end", "days", "max drawdown", "99% max drawdown"])
+        df = _pd.DataFrame(data=data, columns=cols)
 
         # Format data types
         df["days"] = df["days"].astype(int)

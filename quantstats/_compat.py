@@ -14,7 +14,6 @@ import pandas as pd
 import numpy as np
 import warnings
 from packaging import version
-import yfinance as yf
 from typing import Union, Optional, List, Callable
 
 # Version detection - Parse version strings to enable version comparisons
@@ -81,7 +80,7 @@ def normalize_timezone(data: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series,
     # If timezone aware, convert to UTC then make naive
     if data.index.tz is not None:
         result = data.copy()
-        result.index = result.index.tz_convert('UTC').tz_localize(None)
+        result.index = result.index.tz_convert('UTC').tz_localize(None)  # pyright: ignore[reportAttributeAccessIssue]
         return result
     
     # Already timezone naive, return as is
@@ -166,7 +165,7 @@ def safe_resample(data: Union[pd.Series, pd.DataFrame],
         result = resampler.apply(func_name, **kwargs)
     
     # Normalize timezone to ensure consistent comparisons
-    return normalize_timezone(result)
+    return normalize_timezone(result)  # pyright: ignore[reportArgumentType]
 
 
 def safe_concat(objs: List[Union[pd.Series, pd.DataFrame]],
@@ -302,7 +301,7 @@ def safe_frequency_conversion(data: Union[pd.Series, pd.DataFrame],
     else:
         # Fallback to resampling with 'last' aggregation
         # This preserves the last value in each period
-        return safe_resample(data, freq_alias, "last")
+        return safe_resample(data, freq_alias, "last")  # pyright: ignore[reportReturnType]
 
 
 def handle_pandas_warnings():
@@ -381,67 +380,4 @@ def get_string_accessor(series: pd.Series):
     """
     # Return the string accessor - consistent across pandas versions
     return series.str
-
-
-def safe_yfinance_download(tickers: Union[str, List[str]],
-                           proxy: Optional[str] = None,
-                           **kwargs) -> pd.DataFrame:
-    """
-    Safe yfinance download that handles proxy configuration properly.
-
-    This function provides a wrapper around yfinance.download that handles
-    proxy configuration differences between yfinance versions. It ensures
-    compatibility with both old and new yfinance proxy configuration methods.
-
-    Parameters
-    ----------
-    tickers : str or list
-        Ticker symbols to download data for. Can be a single ticker string
-        or a list of ticker symbols
-    proxy : str, optional
-        Proxy configuration string (e.g., 'http://proxy.server:port')
-        Handled automatically based on yfinance version
-    **kwargs
-        Additional arguments passed to yfinance.download such as:
-        - start: Start date for data download
-        - end: End date for data download
-        - period: Period to download (e.g., '1y', '6mo')
-        - interval: Data interval (e.g., '1d', '1h')
-
-    Returns
-    -------
-    pd.DataFrame
-        Downloaded financial data with columns like Open, High, Low, Close, Volume
-
-    Examples
-    --------
-    >>> data = safe_yfinance_download('AAPL', start='2020-01-01', end='2021-01-01')
-    >>> data = safe_yfinance_download(['AAPL', 'MSFT'], period='1y')
-    """
-    # Handle proxy configuration based on yfinance version
-    if proxy is not None:
-        # Check if the new configuration method exists in yfinance
-        if hasattr(yf, "set_config"):
-            # New method: use set_config for global proxy configuration
-            # This approach is preferred in newer yfinance versions
-            yf.set_config(proxy=proxy)
-            # Remove proxy from kwargs to avoid duplicate parameter error
-            kwargs.pop("proxy", None)
-        else:
-            # Old method: pass proxy directly to download function
-            # This is for backward compatibility with older yfinance versions
-            kwargs["proxy"] = proxy
-
-    # Suppress yfinance warnings about deprecation and future changes
-    # This keeps the output clean while maintaining functionality
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=FutureWarning, module="yfinance")
-        # Download the data using yfinance with all provided parameters
-        result = yf.download(tickers, **kwargs)
-
-        # Handle case where yfinance returns None (network issues, invalid ticker, etc.)
-        if result is None:
-            # Return empty DataFrame with standard yfinance columns
-            return pd.DataFrame(columns=['Open', 'High', 'Low', 'Close', 'Volume', 'Adj Close'])
-
-        return result
+    
