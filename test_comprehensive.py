@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Test script to reproduce Issue #468: mode.use_inf_as_null error"""
-
 import numpy as np
 import pandas as pd
 import seaborn as sns

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Test script to reproduce Issue #467: CVAR calculation issue"""
 
-import quantstats as qs
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+import quantstats as qs
+
 
 print(f"Testing with quantstats version: {qs.__version__}")
 
