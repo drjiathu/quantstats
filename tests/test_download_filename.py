@@ -1,8 +1,4 @@
-import pytest
 import quantstats as qs
-import pandas as pd
-import os
-import tempfile
 
 
 def test_download_filename_none(short_sample_returns):

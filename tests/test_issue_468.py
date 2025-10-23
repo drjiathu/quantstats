@@ -1,9 +1,7 @@
-import pytest
-import quantstats as qs
-import pandas as pd
-import numpy as np
 import os
 import tempfile
+
+import quantstats as qs
 
 
 def test_html_report_no_mode_use_inf_as_null_error(sample_returns_series, sample_benchmark):

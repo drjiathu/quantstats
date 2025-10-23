@@ -1,10 +1,7 @@
-import pytest
-import quantstats as qs
-import pandas as pd
-import numpy as np
 import os
 import tempfile
 
+import quantstats as qs
 
 def test_version_info():
     """测试版本信息获取"""

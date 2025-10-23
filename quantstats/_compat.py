@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Compatibility layer for pandas/numpy versions
 Handles version differences and deprecated functionality

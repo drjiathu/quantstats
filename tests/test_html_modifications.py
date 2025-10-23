@@ -1,8 +1,7 @@
-import pytest
-import quantstats as qs
-import pandas as pd
 import os
 import tempfile
+
+import quantstats as qs
 
 
 def test_html_report_output_none(short_sample_returns):

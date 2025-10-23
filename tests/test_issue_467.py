@@ -1,7 +1,4 @@
-import pytest
 import quantstats as qs
-import pandas as pd
-import numpy as np
 
 
 def test_cvar_consistency(sample_returns_series, sample_returns_dataframe):

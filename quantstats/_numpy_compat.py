@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Numpy compatibility layer
 Handles numpy version differences and deprecated functionality

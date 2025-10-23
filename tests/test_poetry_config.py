@@ -1,6 +1,6 @@
-import pytest
-import sys
 import os
+
+import pytest
 
 
 def test_imports():
